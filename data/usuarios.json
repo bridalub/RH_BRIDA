@@ -1,0 +1,18 @@
+{
+  "usuarios": [
+    {
+      "usuario": "admin",
+      "nome": "Administrador do Sistema",
+      "perfil": "Administrador",
+      "ativo": true,
+      "senha_hash": "pbkdf2_sha256$200000$3bad88a59e8ae7b660916f632edb86c7$401ed0248917ffe894410d99e42222485377dc7dcea60361b1343c9e67afeae6"
+    },
+    {
+      "usuario": "gestor",
+      "nome": "Gestor Operacional",
+      "perfil": "Gestor",
+      "ativo": true,
+      "senha_hash": "pbkdf2_sha256$200000$0a17fa268fd1ad856bc87ab67ea2e175$24ddb91498727bc00b8b85d20a815cf193e637f5bc3b710c8458a8ba9e6f80e6"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+# Ambientes e caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.cache/
+
+# Logs e temporários
+*.log
+*.tmp
+tmp_*.txt
+_*.txt
+_*.png
+streamlit_*.log
+
+# IDE / SO
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Segredos Streamlit
+.streamlit/secrets.toml
+
+# Backups locais e cópias de planilha (não versionar)
+backups/
+data/backups/
+data/auditoria_auth.jsonl
+*Copia.xlsx
+*Cópia.xlsx
+tests/evidencia_*
+
+# Artefatos locais de diagnóstico (não versionar)
+tmp_diag_ports.txt
