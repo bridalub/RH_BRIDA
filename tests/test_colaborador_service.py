@@ -213,9 +213,8 @@ def test_ficha_mantem_hierarquia_e_ordem_dos_campos() -> None:
         "Tipo de Afastamento",
         "Motivo do Afastamento",
         "Tipo de Desligamento",
+        "Data de Desligamento",
         "Férias",
-        "Dias de Férias",
-        "Retorno",
     ]
 
 
@@ -287,8 +286,9 @@ def test_quarto_card_permanece_visivel_com_seis_campos_vazios() -> None:
     assert ficha["cabecalho"]["Status"] == "Ativo"
     situacao = ficha["secoes"]["Situação e Férias"]
     assert situacao["Férias"] == "Sem férias"
-    assert situacao["Dias de Férias"] == VALOR_NAO_INFORMADO
-    assert situacao["Retorno"] == VALOR_NAO_INFORMADO
+    assert "Dias de Férias" not in situacao
+    assert "Retorno" not in situacao
+    assert "Data de Desligamento" in situacao
 
 
 def test_quarto_card_formata_campos_preenchidos() -> None:
@@ -302,6 +302,7 @@ def test_quarto_card_formata_campos_preenchidos() -> None:
     assert situacao["Tipo de Afastamento"] == "Tipo fictício"
     assert situacao["Motivo do Afastamento"] == "Motivo fictício"
     assert situacao["Tipo de Desligamento"] == VALOR_NAO_INFORMADO
+    assert situacao["Data de Desligamento"] == VALOR_NAO_INFORMADO
     assert situacao["Férias"].startswith("Em férias ·")
     assert situacao["Dias de Férias"] == "15 dias"
     assert "Faltam" in situacao["Retorno"]
@@ -313,7 +314,9 @@ def test_quarto_card_formata_desligamento_booleano_e_zero_dias() -> None:
 
     assert situacao["Tipo de Desligamento"] == "Sem justa causa"
     assert situacao["Férias"] == "Sem férias"
-    assert situacao["Dias de Férias"] == VALOR_NAO_INFORMADO
+    assert "Dias de Férias" not in situacao
+    assert "Retorno" not in situacao
+    assert "Data de Desligamento" in situacao
 
 
 def test_email_celular_e_campos_ausentes_sao_seguros() -> None:
@@ -343,9 +346,10 @@ def test_quarto_card_substitui_marcadores_tecnicos() -> None:
         "secoes"
     ]["Situação e Férias"]
     assert situacao["Férias"] == "Sem férias"
-    assert situacao["Dias de Férias"] == VALOR_NAO_INFORMADO
-    assert situacao["Retorno"] == VALOR_NAO_INFORMADO
+    assert "Dias de Férias" not in situacao
+    assert "Retorno" not in situacao
     assert situacao["Data de Afastamento"] == VALOR_NAO_INFORMADO
+    assert situacao["Data de Desligamento"] == VALOR_NAO_INFORMADO
 
 
 def test_pcd_vazio_forca_tipo_deficiencia_nao_informado() -> None:

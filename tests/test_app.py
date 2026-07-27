@@ -97,8 +97,8 @@ def _ficha(status: str = "Ativo") -> dict:
                 "Tipo de Afastamento": "Não informado",
                 "Motivo do Afastamento": "Não informado",
                 "Tipo de Desligamento": "Não informado",
+                "Data de Desligamento": "Não informado",
                 "Férias": "Não informado",
-                "Dias de Férias": "Não informado",
             },
         },
     }
@@ -144,6 +144,7 @@ def test_seis_campos_percorrem_fonte_servico_e_view(tmp_path: Path) -> None:
                 "TIPO AFASTAMENTO": "Tipo fictício",
                 "MOTIVO_AFASTAMENTO": "Motivo fictício",
                 "TIPO DESLIGAMENTO": "Tipo desligamento",
+                "DATA_DESLIGAMENTO": "20/07/2026",
                 "INICIO_FERIAS": "01/08/2026",
                 "FIM_FERIAS": "15/08/2026",
                 "DIAS_FERIAS": 15.0,
@@ -161,6 +162,7 @@ def test_seis_campos_percorrem_fonte_servico_e_view(tmp_path: Path) -> None:
     assert situacao["Tipo de Afastamento"] == "Tipo fictício"
     assert situacao["Motivo do Afastamento"] == "Motivo fictício"
     assert situacao["Tipo de Desligamento"] == "Tipo desligamento"
+    assert situacao["Data de Desligamento"] == "20/07/2026"
     assert situacao["Férias"].startswith("Marcada")
     assert situacao["Dias de Férias"] == "15 dias"
     assert "Retorno" in situacao

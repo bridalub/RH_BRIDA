@@ -26,6 +26,7 @@ from services.cadastro_colaborador_service import (
     PLACEHOLDER_SELECT,
     TEXTO_NAO_SE_APLICA,
     buscar_para_cadastro,
+    campo_formulario_visivel,
     comparar_alteracoes,
     meta_opcoes_select,
     montar_payload_gravacao,
@@ -290,7 +291,7 @@ def _valor_exibicao(coluna: str, valor: Any, valores: dict[str, Any] | None = No
             valor,
             mascarado=not pode_ver_cpf(perfil_atual(st.session_state)),
         )
-    if coluna in {"Admissão", "Nascimento", "DATA_AFASTAMENTO", "INICIO_FERIAS", "FIM_FERIAS"}:
+    if coluna in {"Admissão", "Nascimento", "DATA_AFASTAMENTO", "DATA_DESLIGAMENTO", "INICIO_FERIAS", "FIM_FERIAS"}:
         return formatar_data_br(valor if coluna not in ctx else ctx.get(coluna, valor))
     if coluna == "FERIAS":
         return formatar_ferias_exibicao(
@@ -377,6 +378,8 @@ def _renderizar_linhas_visualizacao(
         f'<div class="rh-cadastro-card-body" data-proporcao="{PROPORCAO_LINHA[0]}">'
     ]
     for coluna, rotulo, _ in campos:
+        if not campo_formulario_visivel(coluna, valores):
+            continue
         classe_extra = (
             " rh-cadastro-row-top"
             if coluna == "MOTIVO_AFASTAMENTO"
@@ -662,6 +665,7 @@ def _criar_widget(
         "Admissão",
         "Nascimento",
         "DATA_AFASTAMENTO",
+        "DATA_DESLIGAMENTO",
         "INICIO_FERIAS",
         "FIM_FERIAS",
     }:
@@ -797,6 +801,8 @@ def _renderizar_formulario(
                     )
                     if modo_edicao:
                         for coluna, rotulo, editavel in campos:
+                            if not campo_formulario_visivel(coluna, valores):
+                                continue
                             renderizar_linha_campo(
                                 rotulo,
                                 coluna,

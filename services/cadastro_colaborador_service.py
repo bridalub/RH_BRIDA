@@ -14,7 +14,11 @@ from utils.datas import (
     converter_data,
     formatar_data_br,
 )
-from utils.ferias import OPCOES_FERIAS, sincronizar_campos_ferias
+from utils.ferias import (
+    OPCOES_FERIAS,
+    periodo_ferias_marcado,
+    sincronizar_campos_ferias,
+)
 from utils.formatadores import (
     formatar_cpf_mascarado,
     formatar_email,
@@ -72,6 +76,7 @@ CAMPOS_SITUACAO = (
     ("TIPO AFASTAMENTO", "Tipo de Afastamento", True),
     ("MOTIVO_AFASTAMENTO", "Motivo do Afastamento", True),
     ("TIPO DESLIGAMENTO", "Tipo de Desligamento", True),
+    ("DATA_DESLIGAMENTO", "Data de Desligamento", True),
     ("INICIO_FERIAS", "Início das Férias", True),
     ("FIM_FERIAS", "Fim das Férias", True),
     ("FERIAS", "Férias (calculado)", False),
@@ -86,6 +91,26 @@ CARDS_FORMULARIO = (
     ("Situação e Férias", CAMPOS_SITUACAO),
 )
 
+# Dias/Retorno só entram na UI quando o período de férias está marcado.
+CAMPOS_CONDICIONAIS_FERIAS = frozenset({"DIAS_FERIAS", "RETORNO"})
+
+
+def campo_formulario_visivel(
+    coluna: str,
+    valores: dict[str, Any],
+    *,
+    referencia: date | None = None,
+) -> bool:
+    """Define se o campo deve aparecer no cadastro (visualização ou edição)."""
+    if coluna not in CAMPOS_CONDICIONAIS_FERIAS:
+        return True
+    return periodo_ferias_marcado(
+        valores.get("INICIO_FERIAS"),
+        valores.get("FIM_FERIAS"),
+        admissao=valores.get("Admissão"),
+        referencia=referencia,
+    )
+
 CAMPOS_FORMULARIO = (
     CAMPOS_PROFISSIONAL
     + CAMPOS_ORGANIZACAO
@@ -98,6 +123,7 @@ CAMPOS_DATA = {
     "Admissão",
     "Nascimento",
     "DATA_AFASTAMENTO",
+    "DATA_DESLIGAMENTO",
     "RETORNO",
     "INICIO_FERIAS",
     "FIM_FERIAS",
@@ -290,6 +316,9 @@ def preparar_formulario(
         ),
         "TIPO DESLIGAMENTO": _texto_formulario(
             _valor_bruto(registro, "TIPO DESLIGAMENTO")
+        ),
+        "DATA_DESLIGAMENTO": _data_formulario(
+            _valor_bruto(registro, "DATA_DESLIGAMENTO")
         ),
         "FERIAS": "",
         "INICIO_FERIAS": _data_formulario(_valor_bruto(registro, "INICIO_FERIAS")),
@@ -556,6 +585,10 @@ def validar_formulario(
         valores.get("TIPO DESLIGAMENTO")
     ):
         erros.append("Para status Desligado, informe o tipo de desligamento.")
+    if status == "Desligado" and not converter_data(
+        valores.get("DATA_DESLIGAMENTO")
+    ):
+        erros.append("Para status Desligado, informe a data de desligamento.")
 
     pcd = formatar_pcd(valores.get("PcD"))
     tipo = limpar_espacos(valores.get("TIPO_DEFICIENCIA"))

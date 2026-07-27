@@ -307,6 +307,22 @@ def precisa_periodo(_status: Any = None) -> bool:
     return True
 
 
+def periodo_ferias_marcado(
+    inicio: Any = None,
+    fim: Any = None,
+    *,
+    admissao: Any = None,
+    referencia: date | None = None,
+) -> bool:
+    """True quando há período de férias marcado (status Marcada)."""
+    return (
+        calcular_status_ferias(
+            admissao, inicio, fim, referencia=referencia
+        )
+        == STATUS_MARCADA
+    )
+
+
 def sincronizar_campos_ferias(
     valores: dict[str, Any],
     *,

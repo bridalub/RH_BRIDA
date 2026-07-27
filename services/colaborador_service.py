@@ -44,6 +44,7 @@ MAPEAMENTO_VISUAL = {
     "MOTIVO_AFASTAMENTO": "Motivo do Afastamento",
     "TIPO AFASTAMENTO": "Tipo de Afastamento",
     "TIPO DESLIGAMENTO": "Tipo de Desligamento",
+    "DATA_DESLIGAMENTO": "Data de Desligamento",
     "FERIAS": "Férias",
     "DIAS_FERIAS": "Dias de Férias",
 }
@@ -146,9 +147,10 @@ def _preparar_situacao_ferias(
         formatar_dias_ferias_qtde,
         formatar_ferias_exibicao,
         formatar_retorno_restante,
+        periodo_ferias_marcado,
     )
 
-    return {
+    situacao = {
         "Data de Afastamento": formatar_data_br(
             _valor(registro, "DATA_AFASTAMENTO")
         ),
@@ -161,6 +163,9 @@ def _preparar_situacao_ferias(
         "Tipo de Desligamento": formatar_valor_exibicao(
             _valor(registro, "TIPO DESLIGAMENTO")
         ),
+        "Data de Desligamento": formatar_data_br(
+            _valor(registro, "DATA_DESLIGAMENTO")
+        ),
         "Férias": formatar_ferias_exibicao(
             _valor(registro, "Admissão"),
             _valor(registro, "INICIO_FERIAS"),
@@ -168,20 +173,27 @@ def _preparar_situacao_ferias(
             status=_valor(registro, "FERIAS"),
             referencia=referencia,
         ),
-        "Dias de Férias": formatar_dias_ferias_qtde(
+    }
+    if periodo_ferias_marcado(
+        _valor(registro, "INICIO_FERIAS"),
+        _valor(registro, "FIM_FERIAS"),
+        admissao=_valor(registro, "Admissão"),
+        referencia=referencia,
+    ):
+        situacao["Dias de Férias"] = formatar_dias_ferias_qtde(
             _valor(registro, "INICIO_FERIAS"),
             _valor(registro, "FIM_FERIAS"),
             _valor(registro, "DIAS_FERIAS"),
             admissao=_valor(registro, "Admissão"),
             referencia=referencia,
-        ),
-        "Retorno": formatar_retorno_restante(
+        )
+        situacao["Retorno"] = formatar_retorno_restante(
             _valor(registro, "INICIO_FERIAS"),
             _valor(registro, "FIM_FERIAS") or _valor(registro, "RETORNO"),
             admissao=_valor(registro, "Admissão"),
             referencia=referencia,
-        ),
-    }
+        )
+    return situacao
 
 
 def preparar_ficha_colaborador(

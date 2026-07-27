@@ -99,3 +99,18 @@ def test_legado_sim_nao() -> None:
 
     assert normalizar_status_ferias("Não") == STATUS_SEM
     assert normalizar_status_ferias("Sim") == STATUS_VENCIDA
+
+
+def test_periodo_marcado_controla_exibicao_dias_retorno() -> None:
+    from utils.ferias import periodo_ferias_marcado
+
+    hoje = date(2026, 7, 20)
+    assert not periodo_ferias_marcado(
+        None, None, admissao=date(2024, 1, 1), referencia=hoje
+    )
+    assert periodo_ferias_marcado(
+        date(2026, 8, 1),
+        date(2026, 8, 15),
+        admissao=date(2024, 1, 1),
+        referencia=hoje,
+    )

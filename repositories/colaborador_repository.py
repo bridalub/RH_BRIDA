@@ -44,6 +44,7 @@ COLUNAS_CONHECIDAS = {
     "MOTIVO_AFASTAMENTO",
     "TIPO AFASTAMENTO",
     "TIPO DESLIGAMENTO",
+    "DATA_DESLIGAMENTO",
     "FERIAS",
     "DIAS_FERIAS",
     "INICIO_FERIAS",
@@ -60,6 +61,7 @@ COLUNAS_CONHECIDAS = {
 COLUNAS_MINIMAS = {"Empregado", "Nome"}
 COLUNA_DIRETOR_SOCIO = "Diretor/Sócio"
 COLUNAS_FERIAS_PERIODO = ("INICIO_FERIAS", "FIM_FERIAS", "DIAS_FERIAS")
+COLUNAS_OFICIAIS_EXTRA = ("DATA_DESLIGAMENTO",)
 # Cabeçalhos de planilha mapeados para a coluna oficial Diretor/Sócio.
 ALIASES_DIRETOR_SOCIO = {
     "diretor/socio": COLUNA_DIRETOR_SOCIO,
@@ -503,7 +505,7 @@ def garantir_coluna_diretor_socio(
 def garantir_colunas_ferias(
     diretorio: str | Path | None = None,
 ) -> Path:
-    """Garante INICIO_FERIAS, FIM_FERIAS e DIAS_FERIAS no CSV (com backup)."""
+    """Garante INICIO_FERIAS, FIM_FERIAS, DIAS_FERIAS e DATA_DESLIGAMENTO no CSV."""
     caminho = garantir_coluna_diretor_socio(diretorio)
     with _bloquear_arquivo(caminho):
         try:
@@ -521,7 +523,8 @@ def garantir_colunas_ferias(
                 nrows=0,
             )
         colunas = {str(c).strip() for c in cabecalho.columns}
-        faltando = [c for c in COLUNAS_FERIAS_PERIODO if c not in colunas]
+        obrigatorias = COLUNAS_FERIAS_PERIODO + COLUNAS_OFICIAIS_EXTRA
+        faltando = [c for c in obrigatorias if c not in colunas]
         if not faltando:
             return caminho
         backup = _criar_backup(caminho)
@@ -531,7 +534,7 @@ def garantir_colunas_ferias(
                 dados[coluna] = pd.Series([pd.NA] * len(dados), dtype="string")
         _gravar_csv_atomico(dados, caminho)
         LOGGER.info(
-            "Colunas de férias criadas=%s arquivo=%s backup=%s",
+            "Colunas oficiais criadas=%s arquivo=%s backup=%s",
             faltando,
             caminho.resolve(),
             backup.name if backup else None,
