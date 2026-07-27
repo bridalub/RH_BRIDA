@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from repositories.usuario_repository import caminho_usuarios
 from services.auth_service import (
     PERFIS,
     PERFIL_ADMINISTRADOR,
@@ -22,7 +23,12 @@ from views.guards import exigir_pagina
 def renderizar_admin_usuarios() -> None:
     exigir_pagina("usuarios")
     renderizar_topo_pagina("Usuários")
-    st.caption("Cadastro e manutenção de acessos ao sistema.")
+    st.caption(
+        "Cadastro e manutenção de acessos ao sistema. "
+        "Usuários e senhas (hash) são persistidos em disco e "
+        "permanecem após reiniciar o aplicativo."
+    )
+    st.info(f"Base oficial de usuários: `{caminho_usuarios()}`")
 
     atores = usuario_atual(st.session_state)
     usuarios = listar_usuarios_publicos()

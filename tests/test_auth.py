@@ -140,3 +140,24 @@ def test_criar_usuario_gestor(tmp_path: Path) -> None:
     assert ok2
     assert dados is not None
     assert dados["perfil"] == PERFIL_GESTOR
+
+
+def test_senha_persiste_apos_reinicio_simulado(tmp_path: Path) -> None:
+    """Alteração de senha deve sobreviver a nova leitura do arquivo (reinício)."""
+    from services.auth_service import alterar_senha_usuario
+
+    caminho = tmp_path / "usuarios.json"
+    garantir_usuarios_iniciais(caminho)
+    ok, _ = alterar_senha_usuario("admin", "NovaSenha@456", caminho=caminho)
+    assert ok
+
+    # Simula reinício: nova autenticação só com o arquivo em disco.
+    garantir_usuarios_iniciais(caminho)  # não pode sobrescrever
+    ok_antiga, _, _ = autenticar("admin", "Admin@123", caminho=caminho)
+    ok_nova, _, dados = autenticar("admin", "NovaSenha@456", caminho=caminho)
+    assert not ok_antiga
+    assert ok_nova
+    assert dados is not None
+    assert caminho.is_file()
+    backups = list((tmp_path / "backups").glob("usuarios_*.json"))
+    assert backups, "Deve haver backup ao alterar senha"

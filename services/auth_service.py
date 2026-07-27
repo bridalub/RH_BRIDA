@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from repositories.usuario_repository import (
+    ErroPersistenciaUsuarios,
     buscar_usuario,
     caminho_usuarios,
     listar_usuarios,
@@ -182,10 +183,16 @@ def registrar_auditoria(
 
 
 def garantir_usuarios_iniciais(caminho: Path | None = None) -> Path:
-    """Cria arquivo de usuários com admin e gestor padrão se ainda não existir."""
+    """Cria arquivo de usuários com admin e gestor padrão se ainda não existir.
+
+    Nunca sobrescreve um arquivo que já contém usuários — preserva senhas
+    e cadastros já persistidos.
+    """
     destino = caminho or caminho_usuarios()
-    if destino.exists() and listar_usuarios(destino):
-        return destino
+    if destino.exists():
+        existentes = listar_usuarios(destino)
+        if existentes:
+            return destino
 
     usuarios = [
         {
@@ -390,14 +397,17 @@ def criar_usuario(
         "ativo": bool(ativo),
         "senha_hash": gerar_hash_senha(senha),
     }
-    upsert_usuario(registro, caminho)
+    try:
+        upsert_usuario(registro, caminho)
+    except ErroPersistenciaUsuarios as erro:
+        return False, f"Não foi possível persistir o usuário. {erro}"
     registrar_auditoria(
         "usuario_criado",
         usuario=login,
         detalhe=f"Perfil {perfil}",
         sucesso=True,
     )
-    return True, "Usuário criado."
+    return True, "Usuário criado e persistido."
 
 
 def alterar_senha_usuario(
@@ -412,13 +422,16 @@ def alterar_senha_usuario(
     if not nova_senha:
         return False, "Informe a nova senha."
     registro["senha_hash"] = gerar_hash_senha(nova_senha)
-    upsert_usuario(registro, caminho)
+    try:
+        upsert_usuario(registro, caminho)
+    except ErroPersistenciaUsuarios as erro:
+        return False, f"Não foi possível persistir a senha. {erro}"
     registrar_auditoria(
         "senha_alterada",
         usuario=str(registro.get("usuario")),
         sucesso=True,
     )
-    return True, "Senha atualizada."
+    return True, "Senha atualizada e persistida."
 
 
 def definir_ativo_usuario(
@@ -431,13 +444,16 @@ def definir_ativo_usuario(
     if registro is None:
         return False, "Usuário não encontrado."
     registro["ativo"] = bool(ativo)
-    upsert_usuario(registro, caminho)
+    try:
+        upsert_usuario(registro, caminho)
+    except ErroPersistenciaUsuarios as erro:
+        return False, f"Não foi possível persistir o status. {erro}"
     registrar_auditoria(
         "usuario_ativo" if ativo else "usuario_inativo",
         usuario=str(registro.get("usuario")),
         sucesso=True,
     )
-    return True, "Status atualizado."
+    return True, "Status atualizado e persistido."
 
 
 def excluir_usuario(
@@ -473,9 +489,12 @@ def excluir_usuario(
         <= 1
     ):
         return False, "Não é possível remover o último administrador ativo."
-    remover_usuario(chave, caminho)
+    try:
+        remover_usuario(chave, caminho)
+    except ErroPersistenciaUsuarios as erro:
+        return False, f"Não foi possível persistir a exclusão. {erro}"
     registrar_auditoria("usuario_excluido", usuario=chave, sucesso=True)
-    return True, "Usuário excluído."
+    return True, "Usuário excluído e persistido."
 
 
 def listar_usuarios_publicos(caminho: Path | None = None) -> list[dict[str, Any]]:
